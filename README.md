@@ -12,7 +12,7 @@ now 0.0.0 - alpha
 
 ## Installation
 
-Install my-project with npm
+Install PhantomLilith with pip
 
 ```bash
   pip install git+https://github.com/LobeliaSecurity/PhantomLilith.git
