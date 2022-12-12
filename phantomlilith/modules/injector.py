@@ -97,3 +97,16 @@ class SoftwareBreakpointInjector(phantomlilith.modules.debugger.Engine):
             except:
                 print(" -> Failed")
                 traceback.print_exc()
+
+
+class InlineHooker():
+    def __init__(self) -> None:
+        pass
+
+    def inject(self, inject_address, return_address, binary_code):
+        # 48BA 0000000000000000 mov r10, < JMP Address >
+        # 41FF E2 jmp r10
+        # ~
+        # 48BA 0000000000000000 mov r10, < Inject Address >
+        # 41FF E2 jmp r10
+        pass

@@ -10,5 +10,8 @@ setuptools.setup(
     packages=[
         x.parent.as_posix() for x in pathlib.Path(".").glob("**/__init__.py")
     ],
+    requires=[
+        # "nova @ git+https://github.com/Eve-Familia-Inc/Nova.git"
+    ],
     python_requires='>=3.10'
 )

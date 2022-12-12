@@ -43,6 +43,7 @@ class Core:
         return False
 
     def detach(self):
+        self.continueDebugging = False
         return ctypes.windll.kernel32.DebugActiveProcessStop(self.debugProcessInformation.dwProcessId)
 
     def waitForDebugEvent(self):

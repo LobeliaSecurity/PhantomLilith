@@ -85,3 +85,47 @@ def writeProcessMemory(hProcess, write_address, write_data):
         return True
     else:
         return False
+
+
+# https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualalloc
+def virtualAlloc(lpAddress, dwSize, flAllocationType, flProtect):
+    return ctypes.windll.kernel32.VirtualAlloc(
+        ctypes.byref(lpAddress),
+        dwSize,
+        flAllocationType,
+        flProtect
+    )
+
+
+# https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualallocex
+def virtualAllocEx(hProcess, lpAddress, dwSize, flAllocationType, flProtect):
+    return ctypes.windll.kernel32.VirtualAllocEx(
+        hProcess,
+        ctypes.byref(lpAddress),
+        dwSize,
+        flAllocationType,
+        flProtect
+    )
+
+
+# https://learn.microsoft.com/ja-jp/windows/win32/api/memoryapi/nf-memoryapi-virtualprotect
+def virtualProtect(lpAddress, dwSize, flNewProtect):
+    lpflOldProtect = ctypes.wintypes.PDWORD
+    ctypes.windll.kernel32.VirtualProtect(
+        ctypes.byref(lpAddress),
+        dwSize,
+        ctypes.byref(flNewProtect),
+    )
+    return lpflOldProtect
+
+
+# https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualprotectex
+def virtualProtectEx(hProcess, lpAddress, dwSize, flNewProtect):
+    lpflOldProtect = ctypes.wintypes.PDWORD
+    ctypes.windll.kernel32.VirtualProtect(
+        hProcess,
+        ctypes.byref(lpAddress),
+        dwSize,
+        ctypes.byref(flNewProtect),
+    )
+    return lpflOldProtect
