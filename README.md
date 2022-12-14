@@ -80,7 +80,7 @@ injector.run(pid)
 
 ## Why we needed purely Python debugger?
 
-Our desire is to avoid messing up the development environment , without requiring a build for quick changes, Easy to Setup, Easy to Share, Avoid being detected by Windows Defender as much as possible for work.
+Our desire is to avoid messing up the development environment , without requiring a build for quick changes, Easy to Setup, Easy to Share, Avoid being detected by Windows Defender as much as possible for work.  
 And importantly, sysadmins usually don't care about having Python installed on your work computer.
 
 (The main reason is simply that we wanted to build our own debugger for fun.)
