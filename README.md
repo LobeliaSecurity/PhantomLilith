@@ -27,7 +27,7 @@ import re
 
 # SoftwareBreakpointInjector : injector using [int3]
 injector = phantomlilith.injector.SoftwareBreakpointInjector()
-# MemoryWalker : wrapper for memory. operations read, write, writeHistory, undo all changes
+# MemoryWalker : wrapper for memory operations. read, write, writeHistory, undo all changes
 memoryWalker = phantomlilith.walker.MemoryWalker()
 
 # {executable file name:[{"PID":pid}, ... ]}
