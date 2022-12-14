@@ -22,6 +22,7 @@ class ProcessInformation():
         self.dwThreadId = None
         self.lpStartAddress = None
         self.lpThreadLocalBase = None
+        self.pebBaseAddress = None
         # thread id : ProcessInformation
         self.threads = {}
         # base of dll : LibraryInformation

@@ -1,3 +1,5 @@
+# TODO: Split files by proper module name
+
 import os
 import ctypes
 import ctypes.wintypes
@@ -35,6 +37,7 @@ def openThread(dwThreadId):
     return ctypes.windll.kernel32.OpenThread(phantomlilith.defines.DesiredAccess.THREAD_ALL_ACCESS, None, dwThreadId)
 
 
+# https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-context
 def getThreadContext(hThread):
     lpContext = phantomlilith.structs.CONTEXT()
     lpContext.ContextFlags = phantomlilith.defines.ContextFlags.CONTEXT_ALL
@@ -66,9 +69,9 @@ def getProcessList() -> dict:
 
 
 def readProcessMemory(hProcess, read_address, read_length):
-    R = ""
+    R = b""
     lpBaseAddress = ctypes.wintypes.LPVOID(read_address)
-    lpBuffer = ctypes.create_string_buffer(b'', read_length)
+    lpBuffer = ctypes.create_string_buffer(b"", read_length)
     nSize = read_length
     lpNumberOfBytesRead = ctypes.wintypes.SIZE(0)
     if(ctypes.windll.kernel32.ReadProcessMemory(hProcess, lpBaseAddress, lpBuffer, nSize, ctypes.byref(lpNumberOfBytesRead))):
@@ -112,20 +115,59 @@ def virtualAllocEx(hProcess, lpAddress, dwSize, flAllocationType, flProtect):
 def virtualProtect(lpAddress, dwSize, flNewProtect):
     lpflOldProtect = ctypes.wintypes.PDWORD
     ctypes.windll.kernel32.VirtualProtect(
-        ctypes.byref(lpAddress),
+        ctypes.byref(ctypes.wintypes.LPVOID(lpAddress)),
         dwSize,
-        ctypes.byref(flNewProtect),
+        ctypes.byref(ctypes.wintypes.LPVOID(flNewProtect)),
     )
     return lpflOldProtect
 
 
 # https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualprotectex
 def virtualProtectEx(hProcess, lpAddress, dwSize, flNewProtect):
-    lpflOldProtect = ctypes.wintypes.PDWORD
-    ctypes.windll.kernel32.VirtualProtect(
+    lpflOldProtect = ctypes.wintypes.LPVOID(0)
+    if(not ctypes.windll.kernel32.VirtualProtectEx(
         hProcess,
-        ctypes.byref(lpAddress),
+        ctypes.wintypes.LPVOID(lpAddress),
         dwSize,
-        ctypes.byref(flNewProtect),
-    )
+        flNewProtect,
+        ctypes.byref(lpflOldProtect),
+    )):
+        return None
     return lpflOldProtect
+
+
+# https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualqueryex
+def virtualQueryEx(hProcess, lpAddress):
+    lpBuffer = phantomlilith.structs.MEMORY_BASIC_INFORMATION()
+    if(
+        ctypes.windll.kernel32.VirtualQueryEx(
+            hProcess,
+            ctypes.wintypes.LPVOID(lpAddress),
+            ctypes.byref(lpBuffer),
+            ctypes.sizeof(lpBuffer)
+        ) < ctypes.sizeof(lpBuffer)
+    ):
+        return None
+    return lpBuffer
+
+
+# https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess?redirectedfrom=MSDN
+def ntQueryInformationProcess(ProcessHandle, ProcessInformationClass):
+    ProcessInformation = {
+        phantomlilith.defines.ProcessInformationClass.ProcessBasicInformation: phantomlilith.structs.PROCESS_BASIC_INFORMATION
+    }[ProcessInformationClass]()
+    ctypes.windll.ntdll.NtQueryInformationProcess(
+        ProcessHandle,
+        ProcessInformationClass,
+        ctypes.byref(ProcessInformation),
+        ctypes.sizeof(ProcessInformation),
+        None,
+    )
+    return ProcessInformation
+
+
+def printLastError():
+    print(
+        phantomlilith.defines.StatusCodes.getStr(
+            ctypes.windll.kernel32.GetLastError())
+    )

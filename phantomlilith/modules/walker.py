@@ -1,0 +1,139 @@
+import phantomlilith.modules.debugger
+import phantomlilith.modules.util
+import phantomlilith.defines
+
+import ctypes
+import re
+
+from typing import TypedDict
+from contextlib import contextmanager
+
+
+class MemoryWalker:
+    def __init__(self) -> None:
+        class ChangeHistory(TypedDict):
+            address: int
+            history: list
+
+        self.processInformation = phantomlilith.modules.debugger.ProcessInformation()
+        self.changeHistory = ChangeHistory()
+        # address : phantomlilith.structs.MEMORY_BASIC_INFORMATION
+        self.memoryRegions = {}
+
+    def __del__(self):
+        self.undoAll()
+        phantomlilith.modules.util.closeHandle(
+            self.processInformation.hProcess
+        )
+
+    def openProcess(self, pid):
+        self.processInformation.pid = pid
+        self.processInformation.hProcess = phantomlilith.modules.util.openProcess(
+            phantomlilith.defines.DesiredAccess.PROCESS_VM_READ |
+            phantomlilith.defines.DesiredAccess.PROCESS_VM_WRITE |
+            phantomlilith.defines.DesiredAccess.PROCESS_VM_OPERATION |
+            phantomlilith.defines.DesiredAccess.PROCESS_QUERY_INFORMATION,
+            False,
+            pid
+        )
+        # self.memoryRegions = self.getAllMemoryRegions()
+        self.processInformation.pebBaseAddress = phantomlilith.modules.util.ntQueryInformationProcess(
+            self.processInformation.hProcess,
+            phantomlilith.defines.ProcessInformationClass.ProcessBasicInformation
+        ).PebBaseAddress
+        self.processInformation.entryPoint = int.from_bytes(
+            self.read(self.processInformation.pebBaseAddress + 0x10, 6),
+            "little"
+        )
+
+    def getAllMemoryRegions(self):
+        # address : phantomlilith.structs.MEMORY_BASIC_INFORMATION
+        R = {}
+        offset = 0x00
+        while(True):
+            memoryBasicInformation = phantomlilith.modules.util.virtualQueryEx(
+                self.processInformation.hProcess,
+                offset
+            )
+            if(not memoryBasicInformation):
+                break
+            if(memoryBasicInformation.BaseAddress):
+                R.update({
+                    memoryBasicInformation.BaseAddress: memoryBasicInformation
+                })
+            offset = (
+                memoryBasicInformation.BaseAddress if memoryBasicInformation.BaseAddress != None else 0
+            ) + (
+                memoryBasicInformation.RegionSize if memoryBasicInformation.RegionSize != None else 0)
+        return R
+
+    @contextmanager
+    def switchProtect(self, lpAddress: int, dwSize: int, flNewProtect: int) -> None:
+        # with self.switchProtect(...):
+        try:
+            prev = phantomlilith.modules.util.virtualQueryEx(
+                self.processInformation.hProcess,
+                lpAddress
+            )
+            phantomlilith.modules.util.virtualProtectEx(
+                self.processInformation.hProcess,
+                lpAddress,
+                dwSize,
+                flNewProtect
+            )
+            yield
+        finally:
+            phantomlilith.modules.util.virtualProtectEx(
+                self.processInformation.hProcess,
+                lpAddress,
+                dwSize,
+                prev.Protect
+            )
+
+    def undoAll(self) -> None:
+        print(
+            "MemoryWalker:",
+            f"undoAll {len(self.changeHistory)} positions..."
+        )
+        for address in self.changeHistory:
+            self.write(
+                address, self.changeHistory[address][0], noLogging=True
+            )
+        print("MemoryWalker:", "undoAll done")
+
+    def write(self, write_address: int, write_data: bytes, noLogging=False) -> bool:
+        before = self.read(write_address, len(write_data))
+        if(
+            phantomlilith.modules.util.writeProcessMemory(
+                self.processInformation.hProcess,
+                write_address,
+                write_data
+            )
+        ):
+            if(not noLogging):
+                for buffer_index in range(len(before)):
+                    if write_address + buffer_index not in self.changeHistory:
+                        self.changeHistory[
+                            write_address + buffer_index
+                        ] = []
+                    self.changeHistory[
+                        write_address + buffer_index
+                    ].append((before[buffer_index]).to_bytes(1, "little"))
+            return True
+        else:
+            phantomlilith.modules.util.printLastError()
+            return False
+
+    def read(self, read_address: int, read_length: int) -> bytes:
+        return phantomlilith.modules.util.readProcessMemory(
+            self.processInformation.hProcess,
+            read_address,
+            read_length
+        )
+
+    def search(self, start_address: int, search_distance: int, pattern: bytes) -> list:
+        return [
+            x.start() + start_address for x in re.finditer(
+                re.escape(pattern), self.read(start_address, search_distance)
+            )
+        ]

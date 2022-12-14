@@ -256,3 +256,26 @@ class MODULEINFO(ctypes.Structure):
         ("hFile", ctypes.c_void_p),
         ("hFile", ctypes.c_void_p),
     ]
+
+
+class MEMORY_BASIC_INFORMATION(ctypes.Structure):
+    _fields_ = [
+        ("BaseAddress", ctypes.wintypes.LPVOID),
+        ("AllocationBase", ctypes.wintypes.LPVOID),
+        ("AllocationProtect", ctypes.wintypes.DWORD),
+        ("RegionSize", ctypes.c_size_t),
+        ("State", ctypes.wintypes.DWORD),
+        ("Protect", ctypes.wintypes.DWORD),
+        ("Type", ctypes.wintypes.DWORD),
+    ]
+
+
+class PROCESS_BASIC_INFORMATION(ctypes.Structure):
+    _fields_ = [
+        ("ExitStatus", ctypes.c_void_p),
+        ("PebBaseAddress", ctypes.c_void_p),
+        ("AffinityMask", ctypes.c_void_p),
+        ("BasePriority", ctypes.c_void_p),
+        ("UniqueProcessId", ctypes.c_void_p),
+        ("InheritedFromUniqueProcessId", ctypes.c_void_p),
+    ]
