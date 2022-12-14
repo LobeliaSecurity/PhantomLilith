@@ -40,7 +40,7 @@ memoryWalker.openProcess(pid)
 
 ########################################################################
 # MemoryWalker has memory search method that read memory each call.
-# it's Not cool for multiple searches in the same area.
+# it's Not cool for multiple searches in the same area, same time.
 # so if this situation, We recommend you create search method like this.
 ########################################################################
 # (method) read(read_address: int, read_length: int) -> bytes
