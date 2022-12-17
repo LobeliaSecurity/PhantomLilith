@@ -5,21 +5,28 @@ import ctypes.wintypes
 import phantomlilith.defines
 
 
-class LUID (ctypes.Structure):
+class Structure(ctypes.Structure):
+    def getDict(self):
+        return {
+            name: self.__getattribute__(name) for name, type in self._fields_
+        }
+
+
+class LUID (Structure):
     _fields_ = [
         ("LowPart",  ctypes.wintypes.DWORD),
         ("HighPart", ctypes.wintypes.LONG),
     ]
 
 
-class LUID_AND_ATTRIBUTES(ctypes.Structure):
+class LUID_AND_ATTRIBUTES(Structure):
     _fields_ = [
         ("Luid",  LUID),
         ("Attributes", ctypes.wintypes.DWORD),
     ]
 
 
-class TOKEN_PRIVILEGES(ctypes.Structure):
+class TOKEN_PRIVILEGES(Structure):
     _fields_ = [
         ("PrivilegeCount", ctypes.wintypes.DWORD),
         ("Privileges", LUID_AND_ATTRIBUTES *
@@ -27,7 +34,7 @@ class TOKEN_PRIVILEGES(ctypes.Structure):
     ]
 
 
-class EXCEPTION_RECORD(ctypes.Structure):
+class EXCEPTION_RECORD(Structure):
     pass
 
 
@@ -38,17 +45,19 @@ EXCEPTION_RECORD._fields_ = [
     ("ExceptionAddress",     ctypes.c_void_p),
     ("NumberParameters",     ctypes.wintypes.DWORD),
     ("ExceptionInformation", ctypes.c_ulonglong * 15),
+
+
 ]
 
 
-class EXCEPTION_DEBUG_INFO(ctypes.Structure):
+class EXCEPTION_DEBUG_INFO(Structure):
     _fields_ = [
         ("ExceptionRecord",    EXCEPTION_RECORD),
         ("dwFirstChance",      ctypes.wintypes.DWORD),
     ]
 
 
-class CREATE_THREAD_DEBUG_INFO(ctypes.Structure):
+class CREATE_THREAD_DEBUG_INFO(Structure):
     _fields_ = [
         ("hThread", ctypes.c_void_p),
         ("lpThreadLocalBase", ctypes.c_void_p),
@@ -56,7 +65,7 @@ class CREATE_THREAD_DEBUG_INFO(ctypes.Structure):
     ]
 
 
-class CREATE_PROCESS_DEBUG_INFO(ctypes.Structure):
+class CREATE_PROCESS_DEBUG_INFO(Structure):
     _fields_ = [
         ("hFile", ctypes.c_void_p),
         ("hProcess", ctypes.c_void_p),
@@ -71,19 +80,19 @@ class CREATE_PROCESS_DEBUG_INFO(ctypes.Structure):
     ]
 
 
-class EXIT_THREAD_DEBUG_INFO(ctypes.Structure):
+class EXIT_THREAD_DEBUG_INFO(Structure):
     _fields_ = [
         ("dwExitCode", ctypes.wintypes.DWORD),
     ]
 
 
-class EXIT_PROCESS_DEBUG_INFO(ctypes.Structure):
+class EXIT_PROCESS_DEBUG_INFO(Structure):
     _fields_ = [
         ("dwExitCode", ctypes.wintypes.DWORD),
     ]
 
 
-class LOAD_DLL_DEBUG_INFO(ctypes.Structure):
+class LOAD_DLL_DEBUG_INFO(Structure):
     _fields_ = [
         ("hFile", ctypes.c_void_p),
         ("lpBaseOfDll", ctypes.c_void_p),
@@ -94,13 +103,13 @@ class LOAD_DLL_DEBUG_INFO(ctypes.Structure):
     ]
 
 
-class UNLOAD_DLL_DEBUG_INFO(ctypes.Structure):
+class UNLOAD_DLL_DEBUG_INFO(Structure):
     _fields_ = [
         ("lpBaseOfDll", ctypes.c_void_p),
     ]
 
 
-class OUTPUT_DEBUG_STRING_INFO(ctypes.Structure):
+class OUTPUT_DEBUG_STRING_INFO(Structure):
     _fields_ = [
         ("lpDebugStringData", ctypes.wintypes.LPSTR),
         ("fUnicode", ctypes.wintypes.WORD),
@@ -108,7 +117,7 @@ class OUTPUT_DEBUG_STRING_INFO(ctypes.Structure):
     ]
 
 
-class RIP_INFO(ctypes.Structure):
+class RIP_INFO(Structure):
     _fields_ = [
         ("lpBaseOfDll", ctypes.c_void_p),
         ("SizeOfImage", ctypes.wintypes.DWORD),
@@ -130,7 +139,7 @@ class DEBUG_EVENT_UNION(ctypes.Union):
     ]
 
 
-class DEBUG_EVENT(ctypes.Structure):
+class DEBUG_EVENT(Structure):
     _fields_ = [
         ("dwDebugEventCode", ctypes.wintypes.DWORD),
         ("dwProcessId",      ctypes.wintypes.DWORD),
@@ -139,14 +148,14 @@ class DEBUG_EVENT(ctypes.Structure):
     ]
 
 
-class M128A(ctypes.Structure):
+class M128A(Structure):
     _fields_ = [
         ("Low",  ctypes.c_ulonglong),
         ("High", ctypes.c_ulonglong),
     ]
 
 
-class XSAVE_STRUCT(ctypes.Structure):
+class XSAVE_STRUCT(Structure):
     _fields_ = [
         ("ControlWord",    ctypes.wintypes.WORD),
         ("StatusWord",     ctypes.wintypes.WORD),
@@ -167,7 +176,7 @@ class XSAVE_STRUCT(ctypes.Structure):
     ]
 
 
-class CONTEXT_UNION_STRUCT(ctypes.Structure):
+class CONTEXT_UNION_STRUCT(Structure):
     _fields_ = [
         ("Header", M128A*2),
         ("Legacy", M128A*8),
@@ -200,7 +209,7 @@ class CONTEXT_UNION(ctypes.Union):
     ]
 
 
-class CONTEXT(ctypes.Structure):
+class CONTEXT(Structure):
     _fields_ = [
         ("P1Home",               ctypes.c_ulonglong),
         ("P2Home",               ctypes.c_ulonglong),
@@ -251,14 +260,14 @@ class CONTEXT(ctypes.Structure):
     ]
 
 
-class MODULEINFO(ctypes.Structure):
+class MODULEINFO(Structure):
     _fields_ = [
         ("hFile", ctypes.c_void_p),
         ("hFile", ctypes.c_void_p),
     ]
 
 
-class MEMORY_BASIC_INFORMATION(ctypes.Structure):
+class MEMORY_BASIC_INFORMATION(Structure):
     _fields_ = [
         ("BaseAddress", ctypes.wintypes.LPVOID),
         ("AllocationBase", ctypes.wintypes.LPVOID),
@@ -270,7 +279,7 @@ class MEMORY_BASIC_INFORMATION(ctypes.Structure):
     ]
 
 
-class PROCESS_BASIC_INFORMATION(ctypes.Structure):
+class PROCESS_BASIC_INFORMATION(Structure):
     _fields_ = [
         ("ExitStatus", ctypes.c_void_p),
         ("PebBaseAddress", ctypes.c_void_p),
@@ -278,4 +287,12 @@ class PROCESS_BASIC_INFORMATION(ctypes.Structure):
         ("BasePriority", ctypes.c_void_p),
         ("UniqueProcessId", ctypes.c_void_p),
         ("InheritedFromUniqueProcessId", ctypes.c_void_p),
+    ]
+
+
+class MODULEINFO(Structure):
+    _fields_ = [
+        ("lpBaseOfDll", ctypes.c_void_p),
+        ("SizeOfImage", ctypes.c_void_p),
+        ("EntryPoint", ctypes.c_void_p),
     ]

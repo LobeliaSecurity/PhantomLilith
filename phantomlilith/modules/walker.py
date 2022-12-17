@@ -2,23 +2,33 @@ import phantomlilith.modules.debugger
 import phantomlilith.modules.util
 import phantomlilith.defines
 
-import ctypes
 import re
 
 from typing import TypedDict
 from contextlib import contextmanager
 
 
+class ChangeHistory(TypedDict):
+    address: int
+    history: list
+
+
+class MemoryRegions(TypedDict):
+    address: int
+    MEMORY_BASIC_INFORMATION: phantomlilith.structs.MEMORY_BASIC_INFORMATION
+
+
+class ModuleInformations(TypedDict):
+    name: str
+    MODULEINFO: phantomlilith.structs.MODULEINFO
+
+
 class MemoryWalker:
     def __init__(self) -> None:
-        class ChangeHistory(TypedDict):
-            address: int
-            history: list
-
         self.processInformation = phantomlilith.modules.debugger.ProcessInformation()
         self.changeHistory = ChangeHistory()
-        # address : phantomlilith.structs.MEMORY_BASIC_INFORMATION
-        self.memoryRegions = {}
+        self.memoryRegions = MemoryRegions()
+        self.moduleInformations = ModuleInformations()
 
     def __del__(self):
         self.undoAll()
@@ -37,6 +47,7 @@ class MemoryWalker:
             pid
         )
         # self.memoryRegions = self.getAllMemoryRegions()
+        self.moduleInformations = self.getAllModuleInformation()
         self.processInformation.pebBaseAddress = phantomlilith.modules.util.ntQueryInformationProcess(
             self.processInformation.hProcess,
             phantomlilith.defines.ProcessInformationClass.ProcessBasicInformation
@@ -46,7 +57,24 @@ class MemoryWalker:
             "little"
         )
 
-    def getAllMemoryRegions(self):
+    def getAllModuleInformation(self) -> dict:
+        # module name : phantomlilith.structs.MODULEINFO
+        return {
+            phantomlilith.util.getModuleFileNameEx(
+                self.processInformation.hProcess,
+                hModule
+            ).split("\\")[-1]:
+            phantomlilith.util.getModuleInformation(
+                self.processInformation.hProcess,
+                hModule
+            )
+            for hModule in phantomlilith.util.enumProcessModulesEx(
+                self.processInformation.hProcess,
+                phantomlilith.defines.EnumProcessModulesFilterFlag.LIST_MODULES_ALL
+            )
+        }
+
+    def getAllMemoryRegions(self) -> dict:
         # address : phantomlilith.structs.MEMORY_BASIC_INFORMATION
         R = {}
         offset = 0x00

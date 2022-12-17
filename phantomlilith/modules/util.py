@@ -1,5 +1,6 @@
 # TODO: Split files by proper module name
 
+import sys
 import os
 import ctypes
 import ctypes.wintypes
@@ -49,9 +50,9 @@ def setThreadContext(hThread, lpContext):
     return ctypes.windll.kernel32.SetThreadContext(hThread, ctypes.byref(lpContext))
 
 
-def getProcessList() -> dict:
+def getPidList(lpidProcess_size=1024) -> dict:
     processList = {}
-    lpidProcess = (ctypes.wintypes.DWORD*1024)()
+    lpidProcess = (ctypes.wintypes.DWORD * lpidProcess_size)()
     cb = ctypes.sizeof(lpidProcess)
     lpcbNeeded = ctypes.wintypes.DWORD()
 
@@ -64,7 +65,7 @@ def getProcessList() -> dict:
             filename = getProcessImageFileName(pid)
             if(filename not in processList):
                 processList[filename] = []
-            processList[filename].append({"PID": pid})
+            processList[filename].append(pid)
     return processList
 
 
@@ -118,6 +119,7 @@ def virtualProtect(lpAddress, dwSize, flNewProtect):
         ctypes.byref(ctypes.wintypes.LPVOID(lpAddress)),
         dwSize,
         ctypes.byref(ctypes.wintypes.LPVOID(flNewProtect)),
+        ctypes.byref(lpflOldProtect)
     )
     return lpflOldProtect
 
@@ -171,3 +173,44 @@ def printLastError():
         phantomlilith.defines.StatusCodes.getStr(
             ctypes.windll.kernel32.GetLastError())
     )
+
+
+# https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-enumprocessmodulesex
+def enumProcessModulesEx(hProcess, dwFilterFlag, lphModule_size=1024):
+    lphModule = (ctypes.wintypes.HMODULE * lphModule_size)()
+    cbNeeded = ctypes.c_ulong(0)
+    ctypes.windll.psapi.EnumProcessModulesEx(
+        hProcess,
+        ctypes.byref(lphModule),
+        ctypes.sizeof(lphModule),
+        ctypes.byref(cbNeeded),
+        dwFilterFlag
+    )
+    return [x for x in lphModule if x != None]
+
+
+# https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamea
+def getModuleFileNameEx(hProcess, hModule=None):
+    lpFilename = ctypes.create_string_buffer(512)
+    ctypes.windll.psapi.GetModuleFileNameExA(
+        hProcess,
+        ctypes.wintypes.HMODULE(hModule),
+        ctypes.byref(lpFilename),
+        int(
+            ctypes.sizeof(lpFilename) /
+            ctypes.sizeof(ctypes.wintypes.LPSTR)
+        ),
+    )
+    return lpFilename.value.decode()
+
+
+# https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-getmoduleinformation
+def getModuleInformation(hProcess, hModule):
+    lpmodinfo = phantomlilith.structs.MODULEINFO()
+    ctypes.windll.psapi.GetModuleInformation(
+        hProcess,
+        ctypes.wintypes.HMODULE(hModule),
+        ctypes.byref(lpmodinfo),
+        ctypes.sizeof(lpmodinfo),
+    )
+    return lpmodinfo
