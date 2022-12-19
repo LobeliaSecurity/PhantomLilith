@@ -13,12 +13,12 @@ class ChangeHistory(TypedDict):
     history: list
 
 
-class MemoryRegions(TypedDict):
+class MemoryRegion(TypedDict):
     address: int
     MEMORY_BASIC_INFORMATION: phantomlilith.structs.MEMORY_BASIC_INFORMATION
 
 
-class ModuleInformations(TypedDict):
+class ModuleInformation(TypedDict):
     name: str
     MODULEINFO: phantomlilith.structs.MODULEINFO
 
@@ -27,8 +27,8 @@ class MemoryWalker:
     def __init__(self) -> None:
         self.processInformation = phantomlilith.modules.debugger.ProcessInformation()
         self.changeHistory = ChangeHistory()
-        self.memoryRegions = MemoryRegions()
-        self.moduleInformations = ModuleInformations()
+        self.memoryRegions = MemoryRegion()
+        self.moduleInformations = ModuleInformation()
 
     def __del__(self):
         self.undoAll()
@@ -162,6 +162,6 @@ class MemoryWalker:
     def search(self, start_address: int, search_distance: int, pattern: bytes) -> list:
         return [
             x.start() + start_address for x in re.finditer(
-                re.escape(pattern), self.read(start_address, search_distance)
+                pattern, self.read(start_address, search_distance)
             )
         ]
