@@ -57,7 +57,7 @@ class MemoryWalker:
             "little"
         )
 
-    def getAllModuleInformation(self) -> dict:
+    def getAllModuleInformation(self) -> ModuleInformation:
         # module name : phantomlilith.structs.MODULEINFO
         return {
             phantomlilith.util.getModuleFileNameEx(
@@ -74,7 +74,7 @@ class MemoryWalker:
             )
         }
 
-    def getAllMemoryRegions(self) -> dict:
+    def getAllMemoryRegions(self) -> MemoryRegion:
         # address : phantomlilith.structs.MEMORY_BASIC_INFORMATION
         R = {}
         offset = 0x00
