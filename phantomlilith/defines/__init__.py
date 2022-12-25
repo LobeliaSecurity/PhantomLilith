@@ -18,10 +18,7 @@ class DefineUtilClass():
         self.__strMap__[define_value] = define_key
 
     def getStr(self, key: int) -> str:
-        R = ""
-        if(key in self.__strMap__):
-            R = self.__strMap__[key]
-        return R
+        return self.__strMap__.get(key)
 
 
 AnysizeArray = DefineUtilClass(
