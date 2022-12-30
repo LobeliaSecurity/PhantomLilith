@@ -4,21 +4,21 @@ import phantomlilith.defines
 
 import re
 
-from typing import TypedDict
-from contextlib import contextmanager
+import typing
+import contextlib
 
 
-class ChangeHistory(TypedDict):
+class ChangeHistory(typing.TypedDict):
     address: int
     history: list
 
 
-class MemoryRegion(TypedDict):
+class MemoryRegion(typing.TypedDict):
     address: int
     MEMORY_BASIC_INFORMATION: phantomlilith.structs.MEMORY_BASIC_INFORMATION
 
 
-class ModuleInformation(TypedDict):
+class ModuleInformation(typing.TypedDict):
     name: str
     MODULEINFO: phantomlilith.structs.MODULEINFO
 
@@ -95,7 +95,7 @@ class MemoryWalker:
                 memoryBasicInformation.RegionSize if memoryBasicInformation.RegionSize != None else 0)
         return R
 
-    @contextmanager
+    @contextlib.contextmanager
     def switchProtect(self, lpAddress: int, dwSize: int, flNewProtect: int) -> None:
         # with self.switchProtect(...):
         try:

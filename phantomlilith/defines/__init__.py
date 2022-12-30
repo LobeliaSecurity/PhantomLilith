@@ -1,8 +1,8 @@
 # TODO Separate sources for each header file or make them all the same object?
-from typing import TypedDict
+import typing
 
 
-class DefineMapping(TypedDict):
+class DefineMapping(typing.TypedDict):
     string_key: str
     int_value: int
 
