@@ -260,13 +260,6 @@ class CONTEXT(Structure):
     ]
 
 
-class MODULEINFO(Structure):
-    _fields_ = [
-        ("hFile", ctypes.c_void_p),
-        ("hFile", ctypes.c_void_p),
-    ]
-
-
 class MEMORY_BASIC_INFORMATION(Structure):
     _fields_ = [
         ("BaseAddress", ctypes.wintypes.LPVOID),

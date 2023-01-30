@@ -39,6 +39,16 @@ pid = phantomlilith.modules.util.getProcessList()[
 memoryWalker.openProcess(pid)
 
 ########################################################################
+# MemoryWalker.moduleInformations -> MODULEINFO.getDict() -> {
+#     "lpBaseOfDll", ctypes.c_void_p,
+#     "SizeOfImage", ctypes.c_void_p,
+#     "EntryPoint", ctypes.c_void_p,
+# }
+########################################################################
+memoryWalker.moduleInformations["d3d11.dll"].getDict()
+
+
+########################################################################
 # MemoryWalker has memory search method that read memory each call.
 # it's Not cool for multiple searches in the same area, same time.
 # so if this situation, We recommend you create search method like this.
