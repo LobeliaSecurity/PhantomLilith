@@ -46,7 +46,7 @@ class MemoryWalker:
             False,
             pid
         )
-        # self.memoryRegions = self.getAllMemoryRegions()
+        self.memoryRegions = self.getAllMemoryRegions()
         self.moduleInformations = self.getAllModuleInformation()
         self.processInformation.pebBaseAddress = phantomlilith.modules.util.ntQueryInformationProcess(
             self.processInformation.hProcess,
